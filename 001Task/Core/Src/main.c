@@ -101,8 +101,8 @@ int main(void)
   DWT_CTRL |= (1 << 0);
 
   //call the below API to get the logs in sysview app
-//  SEGGER_SYSVIEW_Conf();
-//  SEGGER_SYSVIEW_STart();
+  SEGGER_SYSVIEW_Conf();
+  SEGGER_SYSVIEW_Start();
 
 
   status = xTaskCreate(task1_handler, "Task_1", 200,"Hello World from Task 1", 2, &task1_handle);
@@ -330,7 +330,7 @@ static void task1_handler(void * parameters ){
 	while(1)
 	{
 		printf("%s\n", (char*)parameters);
-		taskYIELD();
+		//taskYIELD();
 	}
 }
 
@@ -341,7 +341,7 @@ static void task2_handler(void * parameters ){
 	while(1)
 	{
 		printf("%s\n", (char*)parameters);
-		taskYIELD();
+		//taskYIELD();
 	}
 }
 
