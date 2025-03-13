@@ -87,7 +87,8 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+
+	HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -129,7 +130,6 @@ int main(void)
 
   //start FreeRTOS Scheduler
   vTaskStartScheduler(); //returns only if it has any problem
-  printf("End\n");
   //if control comes here, launch of scheduler failed due to insufficient memory in heap
 
 
@@ -351,7 +351,9 @@ static void led_green_handler (void * parameters)
 			xTaskResumeAll();
 			HAL_GPIO_WritePin(GPIOD, LED_GREEN_PIN, GPIO_PIN_SET);
 			SEGGER_SYSVIEW_PrintfTarget("Delete Green Led\n");
-			vTaskDelete(NULL);
+//			vTaskDelete(NULL);
+			vTaskSuspend(ledg_task_handle);
+
 		}
 	}
 }
@@ -370,7 +372,8 @@ static void led_orange_handler (void * parameters)
 			xTaskResumeAll();
 			HAL_GPIO_WritePin(GPIOD, LED_ORANGE_PIN, GPIO_PIN_SET);
 			SEGGER_SYSVIEW_PrintfTarget("Delete Orange Led\n");
-			vTaskDelete(NULL);
+//			vTaskDelete(NULL);
+			vTaskSuspend(ledo_task_handle);
 		}
 	}
 }
@@ -387,8 +390,9 @@ static void led_red_handler (void * parameters)
 			xTaskResumeAll();
 			HAL_GPIO_WritePin(GPIOD, LED_RED_PIN, GPIO_PIN_SET);
 			SEGGER_SYSVIEW_PrintfTarget("Delete Red Led\n");
-			vTaskDelete(btn_task_handle);
-			vTaskDelete(NULL);
+			vTaskSuspend(ledr_task_handle);
+//			vTaskDelete(btn_task_handle);
+//			vTaskDelete(NULL);
 		}
 	}
 }
@@ -403,7 +407,14 @@ static void button_handler(void * parameters)
 		if(btn_read)
 		{
 			if(!prev_read) {
-				xTaskNotify(next_task_handle, 0, eNoAction);
+				if(next_task_handle == NULL) {
+					vTaskResume(ledg_task_handle);
+					vTaskResume(ledo_task_handle);
+					vTaskResume(ledr_task_handle);
+					next_task_handle = ledg_task_handle;
+				}else
+					xTaskNotify(next_task_handle, 0, eNoAction);
+
 			}
 		}
 		prev_read = btn_read;
