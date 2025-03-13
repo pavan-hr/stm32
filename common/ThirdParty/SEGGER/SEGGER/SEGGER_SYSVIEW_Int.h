@@ -46,45 +46,54 @@
 *                                                                    *
 **********************************************************************
 -------------------------- END-OF-HEADER -----------------------------
-
-File    : SEGGER_SYSVIEW_Conf.h
-Purpose : SEGGER SystemView configuration file.
-          Set defines which deviate from the defaults (see SEGGER_SYSVIEW_ConfDefaults.h) here.          
-Revision: $Rev: 21292 $
-
-Additional information:
-  Required defines which must be set are:
-    SEGGER_SYSVIEW_GET_TIMESTAMP
-    SEGGER_SYSVIEW_GET_INTERRUPT_ID
-  For known compilers and cores, these might be set to good defaults
-  in SEGGER_SYSVIEW_ConfDefaults.h.
-  
-  SystemView needs a (nestable) locking mechanism.
-  If not defined, the RTT locking mechanism is used,
-  which then needs to be properly configured.
+File    : SEGGER_SYSVIEW_Int.h
+Purpose : SEGGER SystemView internal header.
+Revision: $Rev: 21281 $
 */
 
-#ifndef SEGGER_SYSVIEW_CONF_H
-#define SEGGER_SYSVIEW_CONF_H
+#ifndef SEGGER_SYSVIEW_INT_H
+#define SEGGER_SYSVIEW_INT_H
 
 /*********************************************************************
 *
-*       Defines, configurable
+*       #include Section
 *
 **********************************************************************
 */
 
-/*********************************************************************
-* TODO: Add your defines here.                                       *
-**********************************************************************
-*/
-#define SEGGER_UART_REC	1
+#include "SEGGER_SYSVIEW.h"
 
-#if (SEGGER_UART_REC ==1)
-	extern void HIF_UART_EnableTXEInterrupt (void);
-#define SEGGER_SYSVIEW_ON_EVENT_RECORDED(x)	HIF_UART_EnableTXEInterrupt()
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-#endif  // SEGGER_SYSVIEW_CONF_H
+
+/*********************************************************************
+*
+*       Private data types
+*
+**********************************************************************
+*/
+//
+// Commands that Host can send to target
+//
+typedef enum {
+  SEGGER_SYSVIEW_COMMAND_ID_START = 1,
+  SEGGER_SYSVIEW_COMMAND_ID_STOP,
+  SEGGER_SYSVIEW_COMMAND_ID_GET_SYSTIME,
+  SEGGER_SYSVIEW_COMMAND_ID_GET_TASKLIST,
+  SEGGER_SYSVIEW_COMMAND_ID_GET_SYSDESC,
+  SEGGER_SYSVIEW_COMMAND_ID_GET_NUMMODULES,
+  SEGGER_SYSVIEW_COMMAND_ID_GET_MODULEDESC,
+  SEGGER_SYSVIEW_COMMAND_ID_HEARTBEAT = 127,
+  // Extended commands: Commands >= 128 have a second parameter
+  SEGGER_SYSVIEW_COMMAND_ID_GET_MODULE = 128
+} SEGGER_SYSVIEW_COMMAND_ID;
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
 
 /*************************** End of file ****************************/

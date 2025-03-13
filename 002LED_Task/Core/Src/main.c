@@ -45,16 +45,19 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
 #define DWT_CTRL	(*(volatile uint32_t*)0xE0001000)
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 /* USER CODE BEGIN PFP */
-static void task1_handler(void * parameters );
-static void task2_handler(void * parameters );
+static void led_green_handler (void * parameters);
+static void led_red_handler (void * parameters);
+static void led_orange_handler (void * parameters);
+
+extern void SEGGER_UART_init(uint32_t);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -70,9 +73,9 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
 	TaskHandle_t task1_handle;
 	TaskHandle_t task2_handle;
+	TaskHandle_t task3_handle;
 
 	BaseType_t status;
   /* USER CODE END 1 */
@@ -106,11 +109,13 @@ int main(void)
   SEGGER_SYSVIEW_Conf();
   //SEGGER_SYSVIEW_Start(); //will be called in segger_uart.c file
 
-
-  status = xTaskCreate(task1_handler, "Task_1", 200,"Hello World from Task 1", 2, &task1_handle);
+  status = xTaskCreate (led_green_handler, "LED_Green_Task", 200, NULL, 2, &task1_handle);
   configASSERT(status == pdPASS);
 
-  status = xTaskCreate(task2_handler, "Task_2", 200,"Hello World from Task 2", 2, &task2_handle);
+  status = xTaskCreate (led_red_handler, "LED_Red_Task", 200, NULL, 2, &task2_handle);
+  configASSERT(status == pdPASS);
+
+  status = xTaskCreate (led_orange_handler, "LED_Orange_Task", 200, NULL, 2, &task3_handle);
   configASSERT(status == pdPASS);
 
   //start FreeRTOS Scheduler
@@ -324,26 +329,35 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
-static void task1_handler(void * parameters ){
-
-	printf("Entering Infinite Loop of Task 1\n");
-
-	while(1)
-	{
-		printf("%s\n", (char*)parameters);
+static void led_green_handler (void * parameters)
+{
+	while(1) {
+		printf("%s\n",(char*) parameters);
+		HAL_GPIO_TogglePin(GPIOD, LED_GREEN_PIN);
+		//vTaskDelay(1000);
+		HAL_Delay(1000);
 		//taskYIELD();
 	}
 }
 
-static void task2_handler(void * parameters ){
-
-	printf("Entering Infinite Loop of Task 2\n");
-
-	while(1)
-	{
-		printf("%s\n", (char*)parameters);
+static void led_orange_handler (void * parameters)
+{
+	while(1) {
+		printf("%s\n",(char*) parameters);
+		HAL_GPIO_TogglePin(GPIOD, LED_ORANGE_PIN);
+		HAL_Delay(800);
 		//taskYIELD();
+
+	}
+}
+static void led_red_handler (void * parameters)
+{
+	while(1) {
+		printf("%s\n",(char*) parameters);
+		HAL_GPIO_TogglePin(GPIOD, LED_RED_PIN);
+		HAL_Delay(400);
+		//taskYIELD();
+
 	}
 }
 

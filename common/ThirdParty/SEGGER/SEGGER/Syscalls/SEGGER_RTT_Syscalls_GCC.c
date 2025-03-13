@@ -45,46 +45,80 @@
 *       SystemView version: 3.20                                    *
 *                                                                    *
 **********************************************************************
--------------------------- END-OF-HEADER -----------------------------
-
-File    : SEGGER_SYSVIEW_Conf.h
-Purpose : SEGGER SystemView configuration file.
-          Set defines which deviate from the defaults (see SEGGER_SYSVIEW_ConfDefaults.h) here.          
-Revision: $Rev: 21292 $
-
-Additional information:
-  Required defines which must be set are:
-    SEGGER_SYSVIEW_GET_TIMESTAMP
-    SEGGER_SYSVIEW_GET_INTERRUPT_ID
-  For known compilers and cores, these might be set to good defaults
-  in SEGGER_SYSVIEW_ConfDefaults.h.
-  
-  SystemView needs a (nestable) locking mechanism.
-  If not defined, the RTT locking mechanism is used,
-  which then needs to be properly configured.
+---------------------------END-OF-HEADER------------------------------
+File    : SEGGER_RTT_Syscalls_GCC.c
+Purpose : Low-level functions for using printf() via RTT in GCC.
+          To use RTT for printf output, include this file in your 
+          application.
+Revision: $Rev: 20755 $
+----------------------------------------------------------------------
 */
+#if (defined __GNUC__) && !(defined __SES_ARM) && !(defined __CROSSWORKS_ARM) && !(defined __ARMCC_VERSION) && !(defined __CC_ARM)
 
-#ifndef SEGGER_SYSVIEW_CONF_H
-#define SEGGER_SYSVIEW_CONF_H
+#include <reent.h>  // required for _write_r
+#include "../SEGGER_RTT.h"
+
 
 /*********************************************************************
 *
-*       Defines, configurable
+*       Types
+*
+**********************************************************************
+*/
+//
+// If necessary define the _reent struct
+// to match the one passed by the used standard library.
+//
+struct _reent;
+
+/*********************************************************************
+*
+*       Function prototypes
+*
+**********************************************************************
+*/
+_ssize_t _write  (int file, const void *ptr, size_t len);
+_ssize_t _write_r(struct _reent *r, int file, const void *ptr, size_t len);
+
+/*********************************************************************
+*
+*       Global functions
 *
 **********************************************************************
 */
 
 /*********************************************************************
-* TODO: Add your defines here.                                       *
-**********************************************************************
+*
+*       _write()
+*
+* Function description
+*   Low-level write function.
+*   libc subroutines will use this system routine for output to all files,
+*   including stdout.
+*   Write data via RTT.
 */
-#define SEGGER_UART_REC	1
+_ssize_t _write(int file, const void *ptr, size_t len) {
+  (void) file;  /* Not used, avoid warning */
+  SEGGER_RTT_Write(0, ptr, len);
+  return len;
+}
 
-#if (SEGGER_UART_REC ==1)
-	extern void HIF_UART_EnableTXEInterrupt (void);
-#define SEGGER_SYSVIEW_ON_EVENT_RECORDED(x)	HIF_UART_EnableTXEInterrupt()
+/*********************************************************************
+*
+*       _write_r()
+*
+* Function description
+*   Low-level reentrant write function.
+*   libc subroutines will use this system routine for output to all files,
+*   including stdout.
+*   Write data via RTT.
+*/
+_ssize_t _write_r(struct _reent *r, int file, const void *ptr, size_t len) {
+  (void) file;  /* Not used, avoid warning */
+  (void) r;     /* Not used, avoid warning */
+  SEGGER_RTT_Write(0, ptr, len);
+  return len;
+}
+
 #endif
-
-#endif  // SEGGER_SYSVIEW_CONF_H
-
-/*************************** End of file ****************************/
+/****** End Of File *************************************************/
